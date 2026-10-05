@@ -1,0 +1,2730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Department of Civic Records — Government Services Portal</title>
+  <meta name="description" content="Redesigned citizen services portal concept for civic record registration and verification. Fast, accessible, and transparent.">
+  <style>
+    /* CSS RESET & DESIGN TOKENS */
+    :root {
+      --primary-navy: #1a3a6b;
+      --primary-navy-dark: #12284c;
+      --primary-navy-light: #244e8e;
+      --saffron-accent: #f0882b;
+      --saffron-accent-hover: #d9741e;
+      --saffron-accent-active: #bf6114;
+      --bg-page: #f6f8fb;
+      --bg-surface: #ffffff;
+      --border-subtle: #d8e0eb;
+      --border-focus: #1a3a6b;
+      --text-main: #1e293b;
+      --text-muted: #526075;
+      --text-light: #64748b;
+      --color-error: #c5221f;
+      --color-error-bg: #fdf2f2;
+      --color-success: #137333;
+      --color-success-bg: #e6f4ea;
+      --color-info-bg: #e8f0fe;
+      --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+      --shadow-md: 0 4px 12px -2px rgba(16, 24, 40, 0.08), 0 2px 6px -2px rgba(16, 24, 40, 0.04);
+      --shadow-lg: 0 12px 24px -4px rgba(16, 24, 40, 0.12), 0 4px 8px -2px rgba(16, 24, 40, 0.06);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--text-main);
+      background-color: var(--bg-page);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ACCESSIBILITY & FOCUS */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid rgba(240, 136, 43, 0.65);
+      outline-offset: 2px;
+    }
+
+    /* 1. PERSISTENT TOP SESSION BAR */
+    .session-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: #0f2445;
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 16px;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .session-bar-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .session-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    .session-pulse {
+      width: 10px;
+      height: 10px;
+      background-color: #34d399;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
+      flex-shrink: 0;
+    }
+
+    .session-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-session {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-session:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .session-toast {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #065f46;
+      color: #ecfdf5;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      opacity: 0;
+      transform: translateY(-2px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+    }
+
+    .session-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 1. MAIN HEADER */
+    .portal-header {
+      background-color: var(--primary-navy);
+      color: #ffffff;
+      padding: 24px 20px;
+      border-bottom: 3px solid var(--saffron-accent);
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .shield-emblem {
+      width: 58px;
+      height: 58px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%);
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .shield-emblem svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .header-text h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .header-text p {
+      font-size: 14px;
+      color: #cbd5e1;
+      font-weight: 400;
+      margin-top: 3px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    /* CONTAINER LAYOUT */
+    .main-content {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 36px 20px 60px 20px;
+    }
+
+    /* 2. HERO + "BEFORE YOU START" BOX */
+    .hero-section {
+      margin-bottom: 32px;
+    }
+
+    .hero-intro {
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 720px;
+      line-height: 1.6;
+    }
+
+    .checklist-box {
+      background-color: var(--bg-surface);
+      border: 2px solid #bfdbfe;
+      border-left: 6px solid var(--primary-navy);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .checklist-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .checklist-header h2 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--primary-navy);
+    }
+
+    .checklist-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #eff6ff;
+      color: var(--primary-navy);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #bfdbfe;
+    }
+
+    .checklist-box p.intro-note {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .checklist-items {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .checklist-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      color: var(--primary-navy);
+      margin-top: 1px;
+    }
+
+    .checklist-text strong {
+      display: block;
+      color: var(--text-main);
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .checklist-text span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* 3. APPLICATION FORM SECTION */
+    .portal-card {
+      background-color: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-md);
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+
+    .form-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .form-heading-wrap h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      line-height: 1.3;
+    }
+
+    .form-heading-wrap p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* AUTOSAVE INDICATOR */
+    .autosave-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background-color: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      transition: all 0.25s ease;
+      min-height: 32px;
+    }
+
+    .autosave-indicator.saved {
+      color: var(--color-success);
+      background-color: var(--color-success-bg);
+    }
+
+    .autosave-indicator svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* STEP PROGRESS BAR */
+    .progress-container {
+      margin-bottom: 32px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .step-current-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-navy);
+    }
+
+    .step-counter {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .progress-track {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .progress-segment {
+      flex: 1;
+      height: 6px;
+      background-color: #e2e8f0;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .progress-segment.active {
+      background-color: var(--primary-navy);
+    }
+
+    .progress-segment.completed {
+      background-color: var(--primary-navy);
+    }
+
+    /* FORM STEP PANELS */
+    .form-step {
+      display: none;
+    }
+
+    .form-step.active {
+      display: block;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-legend {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .step-description {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* FORM GRID & CONTROLS */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px 24px;
+      margin-bottom: 28px;
+    }
+
+    .form-grid.single-col {
+      grid-template-columns: 1fr;
+    }
+
+    .form-col-full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .req-star {
+      color: var(--color-error);
+      font-weight: 700;
+    }
+
+    .form-input,
+    .form-select {
+      min-height: 46px;
+      padding: 10px 14px;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--text-main);
+      background-color: #ffffff;
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      width: 100%;
+    }
+
+    .form-input::placeholder {
+      color: #94a3b8;
+    }
+
+    .form-input:hover,
+    .form-select:hover {
+      border-color: #94a3b8;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(26, 58, 107, 0.15);
+      outline: none;
+    }
+
+    .form-input.has-error,
+    .form-select.has-error {
+      border-color: var(--color-error);
+      background-color: var(--color-error-bg);
+    }
+
+    .form-input.has-error:focus,
+    .form-select.has-error:focus {
+      box-shadow: 0 0 0 3px rgba(197, 34, 31, 0.18);
+    }
+
+    .form-helper {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .form-error {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-error);
+      margin-top: 5px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .form-error.visible {
+      display: flex;
+    }
+
+    /* ADDRESS SECTIONS & SAME AS PERMANENT CHECKBOX */
+    .address-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin: 12px 0 16px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+
+    .same-address-wrapper {
+      background-color: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin: 20px 0 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .same-address-wrapper input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary-navy);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .same-address-wrapper label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* UPLOAD COMPONENT */
+    .upload-container {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .upload-dropzone {
+      border: 2px dashed #94a3b8;
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      text-align: center;
+      background-color: #fafbfc;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .upload-dropzone:hover,
+    .upload-dropzone:focus-within {
+      border-color: var(--primary-navy);
+      background-color: #f0f4f9;
+    }
+
+    .upload-dropzone.has-error {
+      border-color: var(--color-error);
+      background-color: var(--color-error-bg);
+    }
+
+    .upload-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      width: 36px;
+      height: 36px;
+      color: var(--primary-navy);
+      margin-bottom: 8px;
+    }
+
+    .upload-instruction {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .upload-limits-badge {
+      display: inline-block;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      background: #edf2f7;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      margin-top: 4px;
+    }
+
+    .file-preview-card {
+      margin-top: 14px;
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .file-preview-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .file-preview-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-preview-size {
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .btn-remove-file {
+      background: none;
+      border: none;
+      color: var(--color-error);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      text-decoration: underline;
+    }
+
+    .btn-remove-file:hover {
+      background-color: rgba(197, 34, 31, 0.08);
+    }
+
+    /* STEP 3 REVIEW & SUMMARY */
+    .review-group {
+      background-color: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+
+    .review-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .review-group-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-navy);
+    }
+
+    .btn-review-edit {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: var(--primary-navy);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-review-edit:hover {
+      background-color: #f1f5f9;
+      border-color: var(--primary-navy);
+    }
+
+    .review-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px 20px;
+    }
+
+    .review-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .review-item-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-light);
+      margin-bottom: 2px;
+      font-weight: 600;
+    }
+
+    .review-item-val {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .review-item-val.empty {
+      color: #94a3b8;
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    /* ACTION BUTTONS */
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .btn {
+      min-height: 48px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+      text-decoration: none;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background-color: var(--saffron-accent);
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(240, 136, 43, 0.28);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--saffron-accent-hover);
+      box-shadow: 0 4px 8px rgba(240, 136, 43, 0.35);
+    }
+
+    .btn-primary:active {
+      background-color: var(--saffron-accent-active);
+    }
+
+    .btn-secondary {
+      background-color: #ffffff;
+      color: var(--text-main);
+      border-color: #cbd5e1;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    /* SUCCESS CARD */
+    .success-card {
+      background: #ffffff;
+      border: 2px solid #a7f3d0;
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .success-icon-wrap {
+      width: 64px;
+      height: 64px;
+      background-color: var(--color-success-bg);
+      color: var(--color-success);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+    }
+
+    .success-icon-wrap svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    .success-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin-bottom: 8px;
+    }
+
+    .success-applicant {
+      font-size: 18px;
+      color: var(--text-main);
+      margin-bottom: 16px;
+    }
+
+    .success-ref-pill {
+      display: inline-block;
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-family: monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin-bottom: 24px;
+    }
+
+    .success-tracker-callout {
+      background-color: #f0f7ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      max-width: 620px;
+      margin: 0 auto 24px auto;
+      text-align: left;
+    }
+
+    .success-tracker-callout p {
+      font-size: 15px;
+      color: var(--primary-navy);
+      line-height: 1.5;
+    }
+
+    .btn-scroll-tracker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      text-decoration: underline;
+      margin-top: 8px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    /* 4. STATUS TRACKER SECTION */
+    .status-section {
+      background-color: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-md);
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+
+    .status-header {
+      margin-bottom: 24px;
+    }
+
+    .status-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin-bottom: 4px;
+    }
+
+    .status-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .sample-app-banner {
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .sample-app-info strong {
+      color: var(--primary-navy);
+      font-size: 14px;
+    }
+
+    .sample-app-info span {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .sample-stage-badge {
+      background-color: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.04em;
+    }
+
+    /* TRACKER STEPPER (HORIZONTAL ON DESKTOP, VERTICAL ON MOBILE) */
+    .stepper-container {
+      position: relative;
+      margin: 36px 0 28px 0;
+    }
+
+    .stepper-list {
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .stepper-list::before {
+      content: "";
+      position: absolute;
+      top: 22px;
+      left: 36px;
+      right: 36px;
+      height: 4px;
+      background-color: #e2e8f0;
+      z-index: 1;
+    }
+
+    .stepper-progress-line {
+      position: absolute;
+      top: 22px;
+      left: 36px;
+      width: 33.33%; /* Connected to stage 2 */
+      height: 4px;
+      background-color: var(--primary-navy);
+      z-index: 2;
+      transition: width 0.3s ease;
+    }
+
+    .stepper-step {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 1;
+    }
+
+    .stepper-node {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background-color: #ffffff;
+      border: 3px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: #64748b;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .stepper-step.completed .stepper-node {
+      background-color: var(--primary-navy);
+      border-color: var(--primary-navy);
+      color: #ffffff;
+    }
+
+    .stepper-step.active .stepper-node {
+      background-color: #ffffff;
+      border-color: var(--primary-navy);
+      color: var(--primary-navy);
+      box-shadow: 0 0 0 4px rgba(26, 58, 107, 0.15);
+    }
+
+    .stepper-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .stepper-status-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .stepper-step.active .stepper-label {
+      color: var(--primary-navy);
+    }
+
+    .status-plain-note {
+      background-color: #f8fafc;
+      border-left: 4px solid var(--saffron-accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 16px 20px;
+      margin-top: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .status-plain-note svg {
+      width: 22px;
+      height: 22px;
+      color: var(--saffron-accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .status-plain-note p {
+      font-size: 15px;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .status-plain-note strong {
+      color: var(--primary-navy);
+    }
+
+    /* 5. FOOTER */
+    .portal-footer {
+      background-color: var(--primary-navy-dark);
+      color: #cbd5e1;
+      border-top: 4px solid var(--saffron-accent);
+      padding: 36px 20px 48px 20px;
+      font-size: 14px;
+    }
+
+    .footer-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .footer-contact-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      flex-wrap: wrap;
+    }
+
+    .contact-officer-badge {
+      background-color: rgba(240, 136, 43, 0.2);
+      color: #fed7aa;
+      border: 1px solid rgba(240, 136, 43, 0.4);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .contact-details {
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .contact-details strong {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .footer-disclaimer-wrap {
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-exact-disclaimer {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: 0.01em;
+    }
+
+    .footer-meta-note {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    /* RESPONSIVE BREAKPOINTS */
+    @media (max-width: 768px) {
+      .portal-header {
+        padding: 18px 16px;
+      }
+      .header-text h1 {
+        font-size: 20px;
+      }
+      .header-text p {
+        font-size: 12px;
+      }
+      .portal-card {
+        padding: 22px 16px;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+      .status-section {
+        padding: 22px 16px;
+      }
+
+      /* Stack stepper vertically on mobile */
+      .stepper-list {
+        flex-direction: column;
+        gap: 20px;
+        padding-left: 20px;
+      }
+      .stepper-list::before {
+        top: 20px;
+        bottom: 20px;
+        left: 42px;
+        right: auto;
+        width: 4px;
+        height: auto;
+      }
+      .stepper-progress-line {
+        top: 20px;
+        left: 42px;
+        width: 4px;
+        height: 38%;
+      }
+      .stepper-step {
+        flex-direction: row;
+        text-align: left;
+        gap: 16px;
+      }
+      .stepper-node {
+        margin-bottom: 0;
+        flex-shrink: 0;
+      }
+      .stepper-text {
+        display: flex;
+        flex-direction: column;
+      }
+      .form-actions {
+        flex-direction: column-reverse;
+      }
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. HEADER: PERSISTENT SESSION BAR -->
+  <aside class="session-bar" aria-label="Session status">
+    <div class="session-bar-inner">
+      <div class="session-status">
+        <span class="session-pulse" aria-hidden="true"></span>
+        <span id="sessionTimerText">Session active — 28 min remaining</span>
+      </div>
+      <div class="session-actions">
+        <span id="sessionToast" class="session-toast" role="status" aria-live="polite">✓ Session extended</span>
+        <button type="button" id="btnExtendSession" class="btn-session" aria-label="Extend current session by 30 minutes">
+          Extend session
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 1. HEADER: PORTAL BRANDING -->
+  <header class="portal-header">
+    <div class="header-inner">
+      <div class="shield-emblem" aria-hidden="true">
+        <!-- Abstract geometric shield SVG (invented, non-resembling) -->
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 5 L88 20 V50 C88 74 50 95 50 95 C50 95 12 74 12 50 V20 L50 5 Z" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M50 14 L78 26 V48 C78 68 50 84 50 84 C50 84 22 68 22 48 V26 L50 14 Z" fill="rgba(255, 255, 255, 0.12)" stroke="#f0882b" stroke-width="3"/>
+          <circle cx="50" cy="38" r="9" fill="#ffffff"/>
+          <path d="M50 49 L36 71 H64 Z" fill="#f0882b"/>
+          <line x1="50" y1="20" x2="50" y2="82" stroke="#ffffff" stroke-width="2" stroke-dasharray="3 3"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>Department of Civic Records</h1>
+        <p>Government Services Portal</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- 2. HERO + "BEFORE YOU START" BOX -->
+    <section class="hero-section" aria-labelledby="heroTitle">
+      <div class="hero-intro">
+        <h2 id="heroTitle" class="hero-title">Citizen Verification & Record Services</h2>
+        <p class="hero-desc">
+          Official digital channel for updating civic identification records and certified residency details. Designed for straightforward, uninterrupted completion.
+        </p>
+      </div>
+
+      <!-- Prominent "Before you start" box (Fix #2: Upfront Requirements) -->
+      <div class="checklist-box" role="region" aria-labelledby="checklistTitle">
+        <div class="checklist-header">
+          <h2 id="checklistTitle">Before you start</h2>
+          <span class="checklist-badge">Required Preparation</span>
+        </div>
+        <p class="intro-note">Keep these three items ready before beginning your application to complete it in one go:</p>
+        <ul class="checklist-items">
+          <li class="checklist-item">
+            <svg class="checklist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+              <line x1="7" y1="8" x2="17" y2="8"></line>
+              <line x1="7" y1="12" x2="13" y2="12"></line>
+              <line x1="7" y1="16" x2="11" y2="16"></line>
+            </svg>
+            <div class="checklist-text">
+              <strong>Aadhaar number</strong>
+              <span>12-digit national identity number of applicant</span>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <svg class="checklist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <div class="checklist-text">
+              <strong>Scanned address proof</strong>
+              <span>PDF, JPG, or PNG under 2 MB (Electricity bill, Passport, or Rent agreement)</span>
+            </div>
+          </li>
+          <li class="checklist-item">
+            <svg class="checklist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <div class="checklist-text">
+              <strong>Roughly 8 minutes</strong>
+              <span>Estimated time needed to review and submit</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. APPLICATION FORM (CENTREPIECE) -->
+    <section class="portal-card" id="formContainer" aria-labelledby="formMainTitle">
+      <div class="form-top-bar">
+        <div class="form-heading-wrap">
+          <h2 id="formMainTitle">Application for Civic Record Endorsement</h2>
+          <p>Complete all 3 steps. Your inputs are saved automatically as you type.</p>
+        </div>
+        <!-- Autosave Indicator -->
+        <div id="autosaveIndicator" class="autosave-indicator" aria-live="polite">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          <span id="autosaveText">Draft saved</span>
+        </div>
+      </div>
+
+      <!-- Visible Step Progress Bar -->
+      <div class="progress-container" aria-label="Form progress">
+        <div class="progress-header">
+          <span class="step-current-title" id="progressStepTitle">Step 1 of 3 — Personal details</span>
+          <span class="step-counter" id="progressStepCount">Step 1 of 3</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" id="progressTrack">
+          <div class="progress-segment active" id="progSeg1"></div>
+          <div class="progress-segment" id="progSeg2"></div>
+          <div class="progress-segment" id="progSeg3"></div>
+        </div>
+      </div>
+
+      <!-- THE FORM -->
+      <form id="civicAppForm" novalidate>
+        
+        <!-- STEP 1: PERSONAL DETAILS -->
+        <div class="form-step active" id="stepPanel1" role="tabpanel" aria-labelledby="step1Title">
+          <h3 class="step-legend" id="step1Title">Step 1: Personal Details</h3>
+          <p class="step-description">Provide applicant identification details exactly as they appear on official records.</p>
+          
+          <div class="form-grid">
+            <!-- Full Name -->
+            <div class="form-group">
+              <label for="fullName" class="form-label">Full Name <span class="req-star">*</span></label>
+              <input type="text" id="fullName" name="fullName" class="form-input" autocomplete="name" placeholder="e.g. Ramesh Kumar Sharma">
+              <span class="form-helper">Enter your full legal name as per government records.</span>
+              <span class="form-error" id="fullNameError" role="alert">Please enter your full name</span>
+            </div>
+
+            <!-- Father's Name -->
+            <div class="form-group">
+              <label for="fatherName" class="form-label">Father's / Guardian's Name <span class="req-star">*</span></label>
+              <input type="text" id="fatherName" name="fatherName" class="form-input" placeholder="e.g. Suresh Chand Sharma">
+              <span class="form-helper">Used for primary record lineage verification.</span>
+              <span class="form-error" id="fatherNameError" role="alert">Please enter father's or guardian's name</span>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="form-group">
+              <label for="dob" class="form-label">Date of Birth <span class="req-star">*</span></label>
+              <input type="date" id="dob" name="dob" class="form-input">
+              <span class="form-helper">Must be a valid past date.</span>
+              <span class="form-error" id="dobError" role="alert">Please select a valid past date of birth</span>
+            </div>
+
+            <!-- Aadhaar Number -->
+            <div class="form-group">
+              <label for="aadhaarNumber" class="form-label">Aadhaar Number <span class="req-star">*</span></label>
+              <input type="text" id="aadhaarNumber" name="aadhaarNumber" class="form-input" placeholder="XXXX XXXX XXXX" maxlength="14" inputmode="numeric">
+              <span class="form-helper">12-digit number. Auto-formats with spaces as you type or paste.</span>
+              <span class="form-error" id="aadhaarNumberError" role="alert">Aadhaar number must be exactly 12 digits</span>
+            </div>
+
+            <!-- Mobile Number -->
+            <div class="form-group">
+              <label for="mobileNumber" class="form-label">Mobile Number <span class="req-star">*</span></label>
+              <input type="tel" id="mobileNumber" name="mobileNumber" class="form-input" placeholder="9876543210" maxlength="10" inputmode="numeric">
+              <span class="form-helper">10-digit primary mobile number for status updates.</span>
+              <span class="form-error" id="mobileNumberError" role="alert">Mobile number needs 10 digits</span>
+            </div>
+
+            <!-- Email Address -->
+            <div class="form-group">
+              <label for="emailAddress" class="form-label">Email Address <span class="req-star">*</span></label>
+              <input type="email" id="emailAddress" name="emailAddress" class="form-input" placeholder="name@domain.com" autocomplete="email">
+              <span class="form-helper">Digital acknowledgement and copy will be sent here.</span>
+              <span class="form-error" id="emailAddressError" role="alert">Please enter a valid email address (e.g. name@domain.com)</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <div><!-- Spacer --></div>
+            <button type="button" id="btnStep1Next" class="btn btn-primary">
+              Continue to Address →
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: ADDRESS & DOCUMENT -->
+        <div class="form-step" id="stepPanel2" role="tabpanel" aria-labelledby="step2Title">
+          <h3 class="step-legend" id="step2Title">Step 2: Address & Documentation</h3>
+          <p class="step-description">Enter residential locations and upload your verified address proof document.</p>
+
+          <!-- Permanent Address Sub-section -->
+          <div class="address-section-title">Permanent Residential Address</div>
+          <div class="form-grid">
+            <div class="form-group form-col-full">
+              <label for="permAddressLine" class="form-label">Address Line <span class="req-star">*</span></label>
+              <input type="text" id="permAddressLine" name="permAddressLine" class="form-input" placeholder="Flat / House No., Building name, Street">
+              <span class="form-helper">Door/flat number, road, or locality.</span>
+              <span class="form-error" id="permAddressLineError" role="alert">Permanent address line is required</span>
+            </div>
+
+            <div class="form-group">
+              <label for="permCity" class="form-label">City / District <span class="req-star">*</span></label>
+              <input type="text" id="permCity" name="permCity" class="form-input" placeholder="e.g. New Delhi">
+              <span class="form-helper">City or administrative district.</span>
+              <span class="form-error" id="permCityError" role="alert">City is required</span>
+            </div>
+
+            <div class="form-group">
+              <label for="permState" class="form-label">State / Union Territory <span class="req-star">*</span></label>
+              <select id="permState" name="permState" class="form-select">
+                <option value="">-- Select State / UT --</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                <option value="Assam">Assam</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Chhattisgarh">Chhattisgarh</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Goa">Goa</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Haryana">Haryana</option>
+                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                <option value="Jharkhand">Jharkhand</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Manipur">Manipur</option>
+                <option value="Meghalaya">Meghalaya</option>
+                <option value="Mizoram">Mizoram</option>
+                <option value="Nagaland">Nagaland</option>
+                <option value="Odisha">Odisha</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Sikkim">Sikkim</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Tripura">Tripura</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Uttarakhand">Uttarakhand</option>
+                <option value="West Bengal">West Bengal</option>
+              </select>
+              <span class="form-helper">Select official state of permanent residence.</span>
+              <span class="form-error" id="permStateError" role="alert">Please select permanent state</span>
+            </div>
+
+            <div class="form-group">
+              <label for="permPincode" class="form-label">Pincode <span class="req-star">*</span></label>
+              <input type="text" id="permPincode" name="permPincode" class="form-input" placeholder="e.g. 110001" maxlength="6" inputmode="numeric">
+              <span class="form-helper">Exactly 6-digit postal code.</span>
+              <span class="form-error" id="permPincodeError" role="alert">Pincode must be exactly 6 digits</span>
+            </div>
+          </div>
+
+          <!-- "Same as permanent address" Checkbox (Key Visited Fix) -->
+          <div class="same-address-wrapper">
+            <input type="checkbox" id="sameAddressCheck">
+            <label for="sameAddressCheck">Same as permanent address (copies all fields above into current address)</label>
+          </div>
+
+          <!-- Current Address Sub-section -->
+          <div class="address-section-title">Current Residential Address</div>
+          <div class="form-grid">
+            <div class="form-group form-col-full">
+              <label for="currAddressLine" class="form-label">Current Address Line <span class="req-star">*</span></label>
+              <input type="text" id="currAddressLine" name="currAddressLine" class="form-input" placeholder="Flat / House No., Building name, Street">
+              <span class="form-helper">Where you currently reside.</span>
+              <span class="form-error" id="currAddressLineError" role="alert">Current address line is required</span>
+            </div>
+
+            <div class="form-group">
+              <label for="currCity" class="form-label">City / District <span class="req-star">*</span></label>
+              <input type="text" id="currCity" name="currCity" class="form-input" placeholder="e.g. New Delhi">
+              <span class="form-helper">Current city or district.</span>
+              <span class="form-error" id="currCityError" role="alert">Current city is required</span>
+            </div>
+
+            <div class="form-group">
+              <label for="currState" class="form-label">State / Union Territory <span class="req-star">*</span></label>
+              <select id="currState" name="currState" class="form-select">
+                <option value="">-- Select State / UT --</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                <option value="Assam">Assam</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Chhattisgarh">Chhattisgarh</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Goa">Goa</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Haryana">Haryana</option>
+                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                <option value="Jharkhand">Jharkhand</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Manipur">Manipur</option>
+                <option value="Meghalaya">Meghalaya</option>
+                <option value="Mizoram">Mizoram</option>
+                <option value="Nagaland">Nagaland</option>
+                <option value="Odisha">Odisha</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Sikkim">Sikkim</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Tripura">Tripura</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Uttarakhand">Uttarakhand</option>
+                <option value="West Bengal">West Bengal</option>
+              </select>
+              <span class="form-helper">Select current state of residence.</span>
+              <span class="form-error" id="currStateError" role="alert">Please select current state</span>
+            </div>
+
+            <div class="form-group">
+              <label for="currPincode" class="form-label">Pincode <span class="req-star">*</span></label>
+              <input type="text" id="currPincode" name="currPincode" class="form-input" placeholder="e.g. 110001" maxlength="6" inputmode="numeric">
+              <span class="form-helper">Exactly 6-digit postal code.</span>
+              <span class="form-error" id="currPincodeError" role="alert">Current pincode must be exactly 6 digits</span>
+            </div>
+          </div>
+
+          <!-- Document Upload Box -->
+          <div class="upload-container">
+            <div class="form-group">
+              <label class="form-label">Address Proof Document <span class="req-star">*</span></label>
+              <div class="upload-dropzone" id="uploadDropzone">
+                <input type="file" id="addressProofFile" accept=".pdf,.jpg,.jpeg,.png">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <div class="upload-instruction">Choose file or drag and drop here</div>
+                <div><span class="upload-limits-badge">PDF, JPG or PNG · up to 2 MB</span></div>
+              </div>
+              <span class="form-helper">Accepted documents: Electricity bill, Passport, or Registered Rent Agreement.</span>
+              <span class="form-error" id="docUploadError" role="alert">Please upload an address proof file (PDF, JPG or PNG up to 2 MB)</span>
+
+              <!-- Live File Preview Line -->
+              <div id="filePreviewCard" class="file-preview-card" style="display: none;">
+                <div class="file-preview-info">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-navy);" aria-hidden="true">
+                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                    <polyline points="13 2 13 9 20 9"></polyline>
+                  </svg>
+                  <span class="file-preview-name" id="previewFileName">filename.pdf</span>
+                  <span class="file-preview-size" id="previewFileSize">(1.2 MB)</span>
+                </div>
+                <button type="button" id="btnRemoveFile" class="btn-remove-file">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="btnStep2Back" class="btn btn-secondary">
+              ← Back to Personal Details
+            </button>
+            <button type="button" id="btnStep2Next" class="btn btn-primary">
+              Continue to Review →
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: REVIEW & SUBMIT -->
+        <div class="form-step" id="stepPanel3" role="tabpanel" aria-labelledby="step3Title">
+          <h3 class="step-legend" id="step3Title">Step 3: Review and Submit</h3>
+          <p class="step-description">Verify every detail before formal submission. You can edit any section with one click.</p>
+
+          <!-- Group 1: Personal Details Review -->
+          <div class="review-group">
+            <div class="review-group-header">
+              <span class="review-group-title">Personal Details</span>
+              <button type="button" class="btn-review-edit" data-jump-step="1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                Edit
+              </button>
+            </div>
+            <div class="review-grid">
+              <div class="review-item">
+                <span class="review-item-label">Full Name</span>
+                <span class="review-item-val" id="revFullName">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">Father's / Guardian's Name</span>
+                <span class="review-item-val" id="revFatherName">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">Date of Birth</span>
+                <span class="review-item-val" id="revDob">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">Aadhaar Number</span>
+                <span class="review-item-val" id="revAadhaar">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">Mobile Number</span>
+                <span class="review-item-val" id="revMobile">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">Email Address</span>
+                <span class="review-item-val" id="revEmail">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group 2: Permanent Address Review -->
+          <div class="review-group">
+            <div class="review-group-header">
+              <span class="review-group-title">Permanent Address</span>
+              <button type="button" class="btn-review-edit" data-jump-step="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                Edit
+              </button>
+            </div>
+            <div class="review-grid">
+              <div class="review-item" style="grid-column: 1 / -1;">
+                <span class="review-item-label">Address Line</span>
+                <span class="review-item-val" id="revPermAddress">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">City</span>
+                <span class="review-item-val" id="revPermCity">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">State</span>
+                <span class="review-item-val" id="revPermState">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">Pincode</span>
+                <span class="review-item-val" id="revPermPincode">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group 3: Current Address Review -->
+          <div class="review-group">
+            <div class="review-group-header">
+              <span class="review-group-title">Current Address</span>
+              <button type="button" class="btn-review-edit" data-jump-step="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                Edit
+              </button>
+            </div>
+            <div class="review-grid">
+              <div class="review-item" style="grid-column: 1 / -1;">
+                <span class="review-item-label">Address Line</span>
+                <span class="review-item-val" id="revCurrAddress">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">City</span>
+                <span class="review-item-val" id="revCurrCity">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">State</span>
+                <span class="review-item-val" id="revCurrState">—</span>
+              </div>
+              <div class="review-item">
+                <span class="review-item-label">Pincode</span>
+                <span class="review-item-val" id="revCurrPincode">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group 4: Document Review -->
+          <div class="review-group">
+            <div class="review-group-header">
+              <span class="review-group-title">Uploaded Address Proof</span>
+              <button type="button" class="btn-review-edit" data-jump-step="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                Edit
+              </button>
+            </div>
+            <div class="review-grid">
+              <div class="review-item" style="grid-column: 1 / -1;">
+                <span class="review-item-label">Attached File</span>
+                <span class="review-item-val" id="revDocName">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="btnStep3Back" class="btn btn-secondary">
+              ← Back to Address
+            </button>
+            <button type="button" id="btnSubmitApplication" class="btn btn-primary">
+              Submit Application
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+      <!-- SUCCESS CARD (Replaces form area on submit) -->
+      <div id="submissionSuccessCard" class="success-card" style="display: none;" role="region" aria-label="Application submission receipt">
+        <div class="success-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h3 class="success-title">Your application has been submitted</h3>
+        <p class="success-applicant" id="successApplicantText">Applicant: <strong>—</strong></p>
+        <div>
+          <span class="success-ref-pill" id="successRefPill">DCR-2026-89421</span>
+        </div>
+        <div class="success-tracker-callout">
+          <p>
+            Your application is now registered with the Department of Civic Records. You can track its live evaluation progress below in the <strong>Application Status Tracker</strong>.
+          </p>
+          <button type="button" class="btn-scroll-tracker" id="btnScrollToTracker">
+            View status tracker below ↓
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. STATUS TRACKER SECTION -->
+    <section class="status-section" id="statusTrackerSection" aria-labelledby="statusSectionTitle">
+      <div class="status-header">
+        <h2 id="statusSectionTitle" class="status-title">Application Status Tracker</h2>
+        <p class="status-subtitle">Follow real-time progression through all administrative milestones.</p>
+      </div>
+
+      <!-- Sample Application Currently Under Review -->
+      <div class="sample-app-banner">
+        <div class="sample-app-info">
+          <strong>Reference: DCR-2026-44102</strong> &nbsp;·&nbsp;
+          <span>Civic Endorsement Application</span>
+        </div>
+        <div class="sample-stage-badge">Stage 2: Under Review</div>
+      </div>
+
+      <!-- Horizontal (Desktop) / Vertical (Mobile) Stepper -->
+      <div class="stepper-container" aria-label="Application tracking stages">
+        <div class="stepper-progress-line" aria-hidden="true"></div>
+        <ol class="stepper-list">
+          <!-- Stage 1 -->
+          <li class="stepper-step completed">
+            <div class="stepper-node" aria-hidden="true">✓</div>
+            <div class="stepper-text">
+              <span class="stepper-label">Submitted</span>
+              <span class="stepper-status-note">Received 03 Oct</span>
+            </div>
+          </li>
+          <!-- Stage 2 -->
+          <li class="stepper-step active" aria-current="step">
+            <div class="stepper-node" aria-hidden="true">2</div>
+            <div class="stepper-text">
+              <span class="stepper-label">Under review</span>
+              <span class="stepper-status-note">Active Stage</span>
+            </div>
+          </li>
+          <!-- Stage 3 -->
+          <li class="stepper-step">
+            <div class="stepper-node" aria-hidden="true">3</div>
+            <div class="stepper-text">
+              <span class="stepper-label">Approved</span>
+              <span class="stepper-status-note">Pending</span>
+            </div>
+          </li>
+          <!-- Stage 4 -->
+          <li class="stepper-step">
+            <div class="stepper-node" aria-hidden="true">4</div>
+            <div class="stepper-text">
+              <span class="stepper-label">Ready for collection</span>
+              <span class="stepper-status-note">Final</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Plain language status note -->
+      <div class="status-plain-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <p>
+          <strong>Current Status:</strong> Currently with the verification officer. Usually takes 3 working days.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 5. FOOTER -->
+  <footer class="portal-footer">
+    <div class="footer-inner">
+      <!-- Human Contact Row -->
+      <div class="footer-contact-row">
+        <span class="contact-officer-badge">Public Liaison Officer</span>
+        <div class="contact-details">
+          <strong>Meera Iyer</strong> &nbsp;·&nbsp; Records Section, Counter 3 &nbsp;·&nbsp; 011 2345 6789 &nbsp;·&nbsp; Mon–Fri, 9:30 am–5:30 pm
+        </div>
+      </div>
+
+      <!-- Disclaimer row -->
+      <div class="footer-disclaimer-wrap">
+        <div class="footer-exact-disclaimer">
+          Student design concept. Not a real government service.
+        </div>
+        <div class="footer-meta-note">
+          Department of Civic Records · Civic Digital Infrastructure Redesign
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- VANILLA JAVASCRIPT LOGIC -->
+  <script>
+    (function () {
+      "use strict";
+
+      /* ==========================================================================
+         IN-MEMORY APPLICATION STATE
+         (No localStorage, zero backend dependencies)
+         ========================================================================== */
+      const appState = {
+        currentStep: 1,
+        personal: {
+          fullName: "",
+          fatherName: "",
+          dob: "",
+          aadhaarNumber: "",
+          mobileNumber: "",
+          emailAddress: ""
+        },
+        address: {
+          permAddressLine: "",
+          permCity: "",
+          permState: "",
+          permPincode: "",
+          sameAsPermanent: false,
+          currAddressLine: "",
+          currCity: "",
+          currState: "",
+          currPincode: ""
+        },
+        document: {
+          file: null,
+          fileName: "",
+          fileSizeFormatted: ""
+        },
+        submitted: false
+      };
+
+      /* ==========================================================================
+         DOM ELEMENTS REFERENCE CACHE
+         ========================================================================== */
+      const elements = {
+        // Session
+        sessionTimerText: document.getElementById("sessionTimerText"),
+        sessionToast: document.getElementById("sessionToast"),
+        btnExtendSession: document.getElementById("btnExtendSession"),
+
+        // Form Panels & Container
+        formContainer: document.getElementById("formContainer"),
+        civicAppForm: document.getElementById("civicAppForm"),
+        stepPanel1: document.getElementById("stepPanel1"),
+        stepPanel2: document.getElementById("stepPanel2"),
+        stepPanel3: document.getElementById("stepPanel3"),
+        submissionSuccessCard: document.getElementById("submissionSuccessCard"),
+        successApplicantText: document.getElementById("successApplicantText"),
+        successRefPill: document.getElementById("successRefPill"),
+        btnScrollToTracker: document.getElementById("btnScrollToTracker"),
+        statusTrackerSection: document.getElementById("statusTrackerSection"),
+
+        // Progress bar
+        progressStepTitle: document.getElementById("progressStepTitle"),
+        progressStepCount: document.getElementById("progressStepCount"),
+        progressTrack: document.getElementById("progressTrack"),
+        progSeg1: document.getElementById("progSeg1"),
+        progSeg2: document.getElementById("progSeg2"),
+        progSeg3: document.getElementById("progSeg3"),
+
+        // Autosave
+        autosaveIndicator: document.getElementById("autosaveIndicator"),
+        autosaveText: document.getElementById("autosaveText"),
+
+        // Step 1 Inputs
+        fullName: document.getElementById("fullName"),
+        fatherName: document.getElementById("fatherName"),
+        dob: document.getElementById("dob"),
+        aadhaarNumber: document.getElementById("aadhaarNumber"),
+        mobileNumber: document.getElementById("mobileNumber"),
+        emailAddress: document.getElementById("emailAddress"),
+        fullNameError: document.getElementById("fullNameError"),
+        fatherNameError: document.getElementById("fatherNameError"),
+        dobError: document.getElementById("dobError"),
+        aadhaarNumberError: document.getElementById("aadhaarNumberError"),
+        mobileNumberError: document.getElementById("mobileNumberError"),
+        emailAddressError: document.getElementById("emailAddressError"),
+        btnStep1Next: document.getElementById("btnStep1Next"),
+
+        // Step 2 Inputs
+        permAddressLine: document.getElementById("permAddressLine"),
+        permCity: document.getElementById("permCity"),
+        permState: document.getElementById("permState"),
+        permPincode: document.getElementById("permPincode"),
+        permAddressLineError: document.getElementById("permAddressLineError"),
+        permCityError: document.getElementById("permCityError"),
+        permStateError: document.getElementById("permStateError"),
+        permPincodeError: document.getElementById("permPincodeError"),
+
+        sameAddressCheck: document.getElementById("sameAddressCheck"),
+
+        currAddressLine: document.getElementById("currAddressLine"),
+        currCity: document.getElementById("currCity"),
+        currState: document.getElementById("currState"),
+        currPincode: document.getElementById("currPincode"),
+        currAddressLineError: document.getElementById("currAddressLineError"),
+        currCityError: document.getElementById("currCityError"),
+        currStateError: document.getElementById("currStateError"),
+        currPincodeError: document.getElementById("currPincodeError"),
+
+        // Upload
+        addressProofFile: document.getElementById("addressProofFile"),
+        uploadDropzone: document.getElementById("uploadDropzone"),
+        docUploadError: document.getElementById("docUploadError"),
+        filePreviewCard: document.getElementById("filePreviewCard"),
+        previewFileName: document.getElementById("previewFileName"),
+        previewFileSize: document.getElementById("previewFileSize"),
+        btnRemoveFile: document.getElementById("btnRemoveFile"),
+
+        btnStep2Back: document.getElementById("btnStep2Back"),
+        btnStep2Next: document.getElementById("btnStep2Next"),
+
+        // Step 3 Review Elements
+        revFullName: document.getElementById("revFullName"),
+        revFatherName: document.getElementById("revFatherName"),
+        revDob: document.getElementById("revDob"),
+        revAadhaar: document.getElementById("revAadhaar"),
+        revMobile: document.getElementById("revMobile"),
+        revEmail: document.getElementById("revEmail"),
+        revPermAddress: document.getElementById("revPermAddress"),
+        revPermCity: document.getElementById("revPermCity"),
+        revPermState: document.getElementById("revPermState"),
+        revPermPincode: document.getElementById("revPermPincode"),
+        revCurrAddress: document.getElementById("revCurrAddress"),
+        revCurrCity: document.getElementById("revCurrCity"),
+        revCurrState: document.getElementById("revCurrState"),
+        revCurrPincode: document.getElementById("revCurrPincode"),
+        revDocName: document.getElementById("revDocName"),
+        btnStep3Back: document.getElementById("btnStep3Back"),
+        btnSubmitApplication: document.getElementById("btnSubmitApplication")
+      };
+
+      /* ==========================================================================
+         1. PERSISTENT SESSION TIMER
+         Counts down 1 minute at a time starting from 28.
+         Reset to 30:00 on "Extend session". Inline toast notification.
+         ========================================================================== */
+      let sessionMinutesRemaining = 28;
+      let sessionSecondsRemaining = 0;
+      let sessionInterval = null;
+      let toastHideTimeout = null;
+
+      function updateSessionDisplay() {
+        if (sessionMinutesRemaining <= 0 && sessionSecondsRemaining <= 0) {
+          elements.sessionTimerText.textContent = "Session expired — please extend";
+          return;
+        }
+        elements.sessionTimerText.textContent = `Session active — ${sessionMinutesRemaining} min remaining`;
+      }
+
+      function startSessionTimer() {
+        updateSessionDisplay();
+        if (sessionInterval) clearInterval(sessionInterval);
+
+        // Counts down one minute at a time
+        sessionInterval = setInterval(function () {
+          if (sessionMinutesRemaining > 0) {
+            sessionMinutesRemaining -= 1;
+            updateSessionDisplay();
+          } else {
+            clearInterval(sessionInterval);
+            updateSessionDisplay();
+          }
+        }, 60000); // 1 minute per tick
+      }
+
+      function extendSession() {
+        sessionMinutesRemaining = 30;
+        sessionSecondsRemaining = 0;
+        updateSessionDisplay();
+
+        // Restart timer
+        startSessionTimer();
+
+        // Show non-blocking inline toast
+        elements.sessionToast.classList.add("show");
+        if (toastHideTimeout) clearTimeout(toastHideTimeout);
+        toastHideTimeout = setTimeout(function () {
+          elements.sessionToast.classList.remove("show");
+        }, 3000);
+      }
+
+      elements.btnExtendSession.addEventListener("click", extendSession);
+      startSessionTimer();
+
+      /* ==========================================================================
+         AUTOSAVE & IN-MEMORY STATE CAPTURE
+         Triggers after ~600ms pause in typing.
+         ========================================================================== */
+      let autosaveTimeout = null;
+
+      function triggerAutosave() {
+        // Collect current values from DOM into appState
+        syncInputsToState();
+
+        elements.autosaveIndicator.classList.remove("saved");
+        elements.autosaveText.textContent = "Saving...";
+
+        if (autosaveTimeout) clearTimeout(autosaveTimeout);
+        autosaveTimeout = setTimeout(function () {
+          elements.autosaveIndicator.classList.add("saved");
+          elements.autosaveText.textContent = "Saved";
+        }, 600);
+      }
+
+      function syncInputsToState() {
+        appState.personal.fullName = elements.fullName.value.trim();
+        appState.personal.fatherName = elements.fatherName.value.trim();
+        appState.personal.dob = elements.dob.value;
+        appState.personal.aadhaarNumber = elements.aadhaarNumber.value;
+        appState.personal.mobileNumber = elements.mobileNumber.value;
+        appState.personal.emailAddress = elements.emailAddress.value.trim();
+
+        appState.address.permAddressLine = elements.permAddressLine.value.trim();
+        appState.address.permCity = elements.permCity.value.trim();
+        appState.address.permState = elements.permState.value;
+        appState.address.permPincode = elements.permPincode.value.trim();
+
+        appState.address.sameAsPermanent = elements.sameAddressCheck.checked;
+
+        appState.address.currAddressLine = elements.currAddressLine.value.trim();
+        appState.address.currCity = elements.currCity.value.trim();
+        appState.address.currState = elements.currState.value;
+        appState.address.currPincode = elements.currPincode.value.trim();
+      }
+
+      /* ==========================================================================
+         INPUT FORMATTING & PASTE HANDLING
+         Aadhaar auto-groups as XXXX XXXX XXXX on type and paste.
+         Mobile accepts 10 digits only. Pincode accepts 6 digits only.
+         ========================================================================== */
+
+      function formatAadhaarString(raw) {
+        // Strip everything except digits, limit to 12
+        const digits = raw.replace(/\D/g, "").slice(0, 12);
+        const parts = [];
+        for (let i = 0; i < digits.length; i += 4) {
+          parts.push(digits.substring(i, i + 4));
+        }
+        return parts.join(" ");
+      }
+
+      function handleAadhaarInput(e) {
+        const cursorPosition = e.target.selectionStart;
+        const previousLength = e.target.value.length;
+        const formatted = formatAadhaarString(e.target.value);
+        e.target.value = formatted;
+        
+        // Clear error if valid
+        const cleanDigits = formatted.replace(/\D/g, "");
+        if (cleanDigits.length === 12) {
+          clearFieldError(elements.aadhaarNumber, elements.aadhaarNumberError);
+        }
+        triggerAutosave();
+      }
+
+      function handleAadhaarPaste(e) {
+        e.preventDefault();
+        const pastedData = (e.clipboardData || window.clipboardData).getData("text");
+        const formatted = formatAadhaarString(pastedData);
+        elements.aadhaarNumber.value = formatted;
+        const cleanDigits = formatted.replace(/\D/g, "");
+        if (cleanDigits.length === 12) {
+          clearFieldError(elements.aadhaarNumber, elements.aadhaarNumberError);
+        }
+        triggerAutosave();
+      }
+
+      elements.aadhaarNumber.addEventListener("input", handleAadhaarInput);
+      elements.aadhaarNumber.addEventListener("paste", handleAadhaarPaste);
+
+      // Mobile: only digits, max 10
+      elements.mobileNumber.addEventListener("input", function (e) {
+        e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+        if (e.target.value.length === 10) {
+          clearFieldError(elements.mobileNumber, elements.mobileNumberError);
+        }
+        triggerAutosave();
+      });
+
+      // Pincodes: only digits, max 6
+      elements.permPincode.addEventListener("input", function (e) {
+        e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+        if (e.target.value.length === 6) {
+          clearFieldError(elements.permPincode, elements.permPincodeError);
+        }
+        // If "same as permanent" is checked, re-copy
+        if (elements.sameAddressCheck.checked) {
+          elements.currPincode.value = e.target.value;
+          clearFieldError(elements.currPincode, elements.currPincodeError);
+        }
+        triggerAutosave();
+      });
+
+      elements.currPincode.addEventListener("input", function (e) {
+        e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+        if (e.target.value.length === 6) {
+          clearFieldError(elements.currPincode, elements.currPincodeError);
+        }
+        triggerAutosave();
+      });
+
+      // Listen for text changes to sync "Same as permanent" if already checked
+      elements.permAddressLine.addEventListener("input", function () {
+        if (elements.sameAddressCheck.checked) {
+          elements.currAddressLine.value = elements.permAddressLine.value;
+          clearFieldError(elements.currAddressLine, elements.currAddressLineError);
+        }
+        if (elements.permAddressLine.value.trim()) {
+          clearFieldError(elements.permAddressLine, elements.permAddressLineError);
+        }
+        triggerAutosave();
+      });
+
+      elements.permCity.addEventListener("input", function () {
+        if (elements.sameAddressCheck.checked) {
+          elements.currCity.value = elements.permCity.value;
+          clearFieldError(elements.currCity, elements.currCityError);
+        }
+        if (elements.permCity.value.trim()) {
+          clearFieldError(elements.permCity, elements.permCityError);
+        }
+        triggerAutosave();
+      });
+
+      elements.permState.addEventListener("change", function () {
+        if (elements.sameAddressCheck.checked) {
+          elements.currState.value = elements.permState.value;
+          clearFieldError(elements.currState, elements.currStateError);
+        }
+        if (elements.permState.value) {
+          clearFieldError(elements.permState, elements.permStateError);
+        }
+        triggerAutosave();
+      });
+
+      /* ==========================================================================
+         "SAME AS PERMANENT ADDRESS" CHECKBOX LOGIC
+         Rule:
+         - When checked: copies every permanent address value into current address.
+         - Unchecking leaves copied values in place and editable.
+         - Checking again re-copies, overwriting current values.
+         ========================================================================== */
+      function copyPermanentToCurrent() {
+        elements.currAddressLine.value = elements.permAddressLine.value;
+        elements.currCity.value = elements.permCity.value;
+        elements.currState.value = elements.permState.value;
+        elements.currPincode.value = elements.permPincode.value;
+
+        // Clear errors on current fields if they now have valid values
+        if (elements.currAddressLine.value.trim()) clearFieldError(elements.currAddressLine, elements.currAddressLineError);
+        if (elements.currCity.value.trim()) clearFieldError(elements.currCity, elements.currCityError);
+        if (elements.currState.value) clearFieldError(elements.currState, elements.currStateError);
+        if (elements.currPincode.value.trim().length === 6) clearFieldError(elements.currPincode, elements.currPincodeError);
+      }
+
+      elements.sameAddressCheck.addEventListener("change", function () {
+        if (this.checked) {
+          copyPermanentToCurrent();
+        }
+        // When unchecked: do nothing to the values, leave them editable!
+        triggerAutosave();
+      });
+
+      /* ==========================================================================
+         GENERIC BLUR & INSTANT ERROR CLEARING
+         ========================================================================== */
+      function showFieldError(inputEl, errorEl, message) {
+        inputEl.classList.add("has-error");
+        if (message) errorEl.textContent = message;
+        errorEl.classList.add("visible");
+      }
+
+      function clearFieldError(inputEl, errorEl) {
+        inputEl.classList.remove("has-error");
+        errorEl.classList.remove("visible");
+      }
+
+      // Input change / blur listeners for instant feedback
+      elements.fullName.addEventListener("input", function () {
+        if (this.value.trim()) clearFieldError(this, elements.fullNameError);
+        triggerAutosave();
+      });
+      elements.fullName.addEventListener("blur", function () {
+        if (!this.value.trim()) showFieldError(this, elements.fullNameError, "Please enter your full legal name");
+      });
+
+      elements.fatherName.addEventListener("input", function () {
+        if (this.value.trim()) clearFieldError(this, elements.fatherNameError);
+        triggerAutosave();
+      });
+      elements.fatherName.addEventListener("blur", function () {
+        if (!this.value.trim()) showFieldError(this, elements.fatherNameError, "Please enter father's or guardian's name");
+      });
+
+      elements.dob.addEventListener("change", function () {
+        if (validateDob(this.value)) {
+          clearFieldError(this, elements.dobError);
+        } else {
+          showFieldError(this, elements.dobError, "Date of birth must be a valid past date");
+        }
+        triggerAutosave();
+      });
+
+      elements.mobileNumber.addEventListener("blur", function () {
+        if (this.value.length !== 10) {
+          showFieldError(this, elements.mobileNumberError, "Mobile number needs 10 digits");
+        }
+      });
+
+      elements.emailAddress.addEventListener("input", function () {
+        if (validateEmail(this.value.trim())) {
+          clearFieldError(this, elements.emailAddressError);
+        }
+        triggerAutosave();
+      });
+      elements.emailAddress.addEventListener("blur", function () {
+        if (!validateEmail(this.value.trim())) {
+          showFieldError(this, elements.emailAddressError, "Please enter a valid email address (e.g. name@domain.com)");
+        }
+      });
+
+      elements.permAddressLine.addEventListener("blur", function () {
+        if (!this.value.trim()) showFieldError(this, elements.permAddressLineError, "Permanent address line is required");
+      });
+      elements.permCity.addEventListener("blur", function () {
+        if (!this.value.trim()) showFieldError(this, elements.permCityError, "City is required");
+      });
+      elements.permState.addEventListener("change", function () {
+        if (this.value) clearFieldError(this, elements.permStateError);
+      });
+      elements.permPincode.addEventListener("blur", function () {
+        if (this.value.length !== 6) showFieldError(this, elements.permPincodeError, "Pincode must be exactly 6 digits");
+      });
+
+      elements.currAddressLine.addEventListener("input", function () {
+        if (this.value.trim()) clearFieldError(this, elements.currAddressLineError);
+        triggerAutosave();
+      });
+      elements.currAddressLine.addEventListener("blur", function () {
+        if (!this.value.trim()) showFieldError(this, elements.currAddressLineError, "Current address line is required");
+      });
+
+      elements.currCity.addEventListener("input", function () {
+        if (this.value.trim()) clearFieldError(this, elements.currCityError);
+        triggerAutosave();
+      });
+      elements.currCity.addEventListener("blur", function () {
+        if (!this.value.trim()) showFieldError(this, elements.currCityError, "Current city is required");
+      });
+
+      elements.currState.addEventListener("change", function () {
+        if (this.value) clearFieldError(this, elements.currStateError);
+        triggerAutosave();
+      });
+      elements.currPincode.addEventListener("blur", function () {
+        if (this.value.length !== 6) showFieldError(this, elements.currPincodeError, "Current pincode must be exactly 6 digits");
+      });
+
+      /* ==========================================================================
+         FILE UPLOAD & CLIENT-SIDE VALIDATION
+         Max size: 2 MB (2 * 1024 * 1024 bytes)
+         Allowed types: pdf, jpg, jpeg, png
+         Never clears the rest of the form!
+         ========================================================================== */
+      const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+      const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
+
+      function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + " B";
+        const kb = bytes / 1024;
+        if (kb < 1024) return kb.toFixed(1) + " KB";
+        return (kb / 1024).toFixed(2) + " MB";
+      }
+
+      function handleFileSelected(file) {
+        if (!file) return;
+
+        // Check extension
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (!ALLOWED_EXTENSIONS.includes(ext)) {
+          showFileError("Invalid file type. Please upload a PDF, JPG, or PNG file.");
+          clearFileInput();
+          return;
+        }
+
+        // Check size
+        if (file.size > MAX_FILE_SIZE) {
+          showFileError(`File is too large (${formatBytes(file.size)}). Maximum allowed size is 2 MB.`);
+          clearFileInput();
+          return;
+        }
+
+        // Valid file!
+        appState.document.file = file;
+        appState.document.fileName = file.name;
+        appState.document.fileSizeFormatted = formatBytes(file.size);
+
+        // Update preview
+        elements.previewFileName.textContent = file.name;
+        elements.previewFileSize.textContent = `(${formatBytes(file.size)})`;
+        elements.filePreviewCard.style.display = "flex";
+        clearFileError();
+        triggerAutosave();
+      }
+
+      function showFileError(msg) {
+        elements.uploadDropzone.classList.add("has-error");
+        elements.docUploadError.textContent = msg;
+        elements.docUploadError.classList.add("visible");
+        elements.filePreviewCard.style.display = "none";
+        appState.document.file = null;
+        appState.document.fileName = "";
+        appState.document.fileSizeFormatted = "";
+      }
+
+      function clearFileError() {
+        elements.uploadDropzone.classList.remove("has-error");
+        elements.docUploadError.classList.remove("visible");
+      }
+
+      function clearFileInput() {
+        elements.addressProofFile.value = "";
+      }
+
+      elements.addressProofFile.addEventListener("change", function (e) {
+        if (e.target.files && e.target.files[0]) {
+          handleFileSelected(e.target.files[0]);
+        }
+      });
+
+      elements.btnRemoveFile.addEventListener("click", function () {
+        clearFileInput();
+        elements.filePreviewCard.style.display = "none";
+        appState.document.file = null;
+        appState.document.fileName = "";
+        appState.document.fileSizeFormatted = "";
+        triggerAutosave();
+      });
+
+      /* ==========================================================================
+         VALIDATION HELPERS
+         ========================================================================== */
+      function validateEmail(email) {
+        // Basic name@domain pattern
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      }
+
+      function validateDob(dateStr) {
+        if (!dateStr) return false;
+        const selectedDate = new Date(dateStr);
+        if (isNaN(selectedDate.getTime())) return false;
+        const today = new Date();
+        // Must be in the past
+        return selectedDate < today;
+      }
+
+      function validateStep1() {
+        let isValid = true;
+        let firstInvalidInput = null;
+
+        // Full name
+        if (!elements.fullName.value.trim()) {
+          showFieldError(elements.fullName, elements.fullNameError, "Please enter your full name");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.fullName;
+        } else {
+          clearFieldError(elements.fullName, elements.fullNameError);
+        }
+
+        // Father's name
+        if (!elements.fatherName.value.trim()) {
+          showFieldError(elements.fatherName, elements.fatherNameError, "Please enter father's or guardian's name");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.fatherName;
+        } else {
+          clearFieldError(elements.fatherName, elements.fatherNameError);
+        }
+
+        // Date of birth
+        if (!validateDob(elements.dob.value)) {
+          showFieldError(elements.dob, elements.dobError, "Please select a valid past date of birth");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.dob;
+        } else {
+          clearFieldError(elements.dob, elements.dobError);
+        }
+
+        // Aadhaar (12 digits)
+        const cleanAadhaar = elements.aadhaarNumber.value.replace(/\D/g, "");
+        if (cleanAadhaar.length !== 12) {
+          showFieldError(elements.aadhaarNumber, elements.aadhaarNumberError, "Aadhaar number must be exactly 12 digits");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.aadhaarNumber;
+        } else {
+          clearFieldError(elements.aadhaarNumber, elements.aadhaarNumberError);
+        }
+
+        // Mobile (10 digits)
+        const cleanMobile = elements.mobileNumber.value.replace(/\D/g, "");
+        if (cleanMobile.length !== 10) {
+          showFieldError(elements.mobileNumber, elements.mobileNumberError, "Mobile number needs 10 digits");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.mobileNumber;
+        } else {
+          clearFieldError(elements.mobileNumber, elements.mobileNumberError);
+        }
+
+        // Email
+        if (!validateEmail(elements.emailAddress.value.trim())) {
+          showFieldError(elements.emailAddress, elements.emailAddressError, "Please enter a valid email address (e.g. name@domain.com)");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.emailAddress;
+        } else {
+          clearFieldError(elements.emailAddress, elements.emailAddressError);
+        }
+
+        if (firstInvalidInput) {
+          firstInvalidInput.focus();
+        }
+
+        return isValid;
+      }
+
+      function validateStep2() {
+        let isValid = true;
+        let firstInvalidInput = null;
+
+        // Perm Address Line
+        if (!elements.permAddressLine.value.trim()) {
+          showFieldError(elements.permAddressLine, elements.permAddressLineError, "Permanent address line is required");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.permAddressLine;
+        } else {
+          clearFieldError(elements.permAddressLine, elements.permAddressLineError);
+        }
+
+        // Perm City
+        if (!elements.permCity.value.trim()) {
+          showFieldError(elements.permCity, elements.permCityError, "City is required");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.permCity;
+        } else {
+          clearFieldError(elements.permCity, elements.permCityError);
+        }
+
+        // Perm State
+        if (!elements.permState.value) {
+          showFieldError(elements.permState, elements.permStateError, "Please select permanent state");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.permState;
+        } else {
+          clearFieldError(elements.permState, elements.permStateError);
+        }
+
+        // Perm Pincode
+        if (elements.permPincode.value.trim().length !== 6) {
+          showFieldError(elements.permPincode, elements.permPincodeError, "Pincode must be exactly 6 digits");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.permPincode;
+        } else {
+          clearFieldError(elements.permPincode, elements.permPincodeError);
+        }
+
+        // Current Address Line
+        if (!elements.currAddressLine.value.trim()) {
+          showFieldError(elements.currAddressLine, elements.currAddressLineError, "Current address line is required");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.currAddressLine;
+        } else {
+          clearFieldError(elements.currAddressLine, elements.currAddressLineError);
+        }
+
+        // Current City
+        if (!elements.currCity.value.trim()) {
+          showFieldError(elements.currCity, elements.currCityError, "Current city is required");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.currCity;
+        } else {
+          clearFieldError(elements.currCity, elements.currCityError);
+        }
+
+        // Current State
+        if (!elements.currState.value) {
+          showFieldError(elements.currState, elements.currStateError, "Please select current state");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.currState;
+        } else {
+          clearFieldError(elements.currState, elements.currStateError);
+        }
+
+        // Current Pincode
+        if (elements.currPincode.value.trim().length !== 6) {
+          showFieldError(elements.currPincode, elements.currPincodeError, "Current pincode must be exactly 6 digits");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.currPincode;
+        } else {
+          clearFieldError(elements.currPincode, elements.currPincodeError);
+        }
+
+        // Document upload check
+        if (!appState.document.file) {
+          showFileError("Please upload an address proof file (PDF, JPG or PNG up to 2 MB)");
+          isValid = false;
+          if (!firstInvalidInput) firstInvalidInput = elements.addressProofFile;
+        } else {
+          clearFileError();
+        }
+
+        if (firstInvalidInput) {
+          firstInvalidInput.focus();
+        }
+
+        return isValid;
+      }
+
+      /* ==========================================================================
+         STEP NAVIGATION & REVIEW POPULATION
+         Preserves all typed values completely.
+         ========================================================================== */
+      function goToStep(stepNumber) {
+        syncInputsToState();
+        appState.currentStep = stepNumber;
+
+        // Hide all step panels
+        elements.stepPanel1.classList.remove("active");
+        elements.stepPanel2.classList.remove("active");
+        elements.stepPanel3.classList.remove("active");
+
+        // Update progress bar
+        elements.progressTrack.setAttribute("aria-valuenow", stepNumber);
+        elements.progSeg1.classList.remove("active", "completed");
+        elements.progSeg2.classList.remove("active", "completed");
+        elements.progSeg3.classList.remove("active", "completed");
+
+        if (stepNumber === 1) {
+          elements.stepPanel1.classList.add("active");
+          elements.progSeg1.classList.add("active");
+          elements.progressStepTitle.textContent = "Step 1 of 3 — Personal details";
+          elements.progressStepCount.textContent = "Step 1 of 3";
+        } else if (stepNumber === 2) {
+          elements.stepPanel2.classList.add("active");
+          elements.progSeg1.classList.add("completed");
+          elements.progSeg2.classList.add("active");
+          elements.progressStepTitle.textContent = "Step 2 of 3 — Address & Documentation";
+          elements.progressStepCount.textContent = "Step 2 of 3";
+        } else if (stepNumber === 3) {
+          populateReview();
+          elements.stepPanel3.classList.add("active");
+          elements.progSeg1.classList.add("completed");
+          elements.progSeg2.classList.add("completed");
+          elements.progSeg3.classList.add("active");
+          elements.progressStepTitle.textContent = "Step 3 of 3 — Review and submit";
+          elements.progressStepCount.textContent = "Step 3 of 3";
+        }
+
+        // Scroll smoothly to form top
+        elements.formContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function populateReview() {
+        syncInputsToState();
+
+        elements.revFullName.textContent = appState.personal.fullName || "—";
+        elements.revFatherName.textContent = appState.personal.fatherName || "—";
+        elements.revDob.textContent = appState.personal.dob || "—";
+        elements.revAadhaar.textContent = appState.personal.aadhaarNumber || "—";
+        elements.revMobile.textContent = appState.personal.mobileNumber || "—";
+        elements.revEmail.textContent = appState.personal.emailAddress || "—";
+
+        elements.revPermAddress.textContent = appState.address.permAddressLine || "—";
+        elements.revPermCity.textContent = appState.address.permCity || "—";
+        elements.revPermState.textContent = appState.address.permState || "—";
+        elements.revPermPincode.textContent = appState.address.permPincode || "—";
+
+        elements.revCurrAddress.textContent = appState.address.currAddressLine || "—";
+        elements.revCurrCity.textContent = appState.address.currCity || "—";
+        elements.revCurrState.textContent = appState.address.currState || "—";
+        elements.revCurrPincode.textContent = appState.address.currPincode || "—";
+
+        if (appState.document.fileName) {
+          elements.revDocName.textContent = `${appState.document.fileName} (${appState.document.fileSizeFormatted})`;
+        } else {
+          elements.revDocName.textContent = "No file attached";
+        }
+      }
+
+      // Step Navigation Listeners
+      elements.btnStep1Next.addEventListener("click", function () {
+        if (validateStep1()) {
+          goToStep(2);
+        }
+      });
+
+      elements.btnStep2Back.addEventListener("click", function () {
+        goToStep(1);
+      });
+
+      elements.btnStep2Next.addEventListener("click", function () {
+        if (validateStep2()) {
+          goToStep(3);
+        }
+      });
+
+      elements.btnStep3Back.addEventListener("click", function () {
+        goToStep(2);
+      });
+
+      // Jump back to steps via Edit buttons in review
+      document.querySelectorAll(".btn-review-edit").forEach(function (button) {
+        button.addEventListener("click", function () {
+          const targetStep = parseInt(this.getAttribute("data-jump-step"), 10);
+          if (targetStep === 1 || targetStep === 2) {
+            goToStep(targetStep);
+          }
+        });
+      });
+
+      /* ==========================================================================
+         FINAL SUBMIT: INLINE SUCCESS CARD (NO POPUPS / ALERTS)
+         ========================================================================== */
+      elements.btnSubmitApplication.addEventListener("click", function () {
+        syncInputsToState();
+        appState.submitted = true;
+
+        // Generate synthetic reference code
+        const randomNum = Math.floor(10000 + Math.random() * 90000);
+        const refId = `DCR-2026-${randomNum}`;
+
+        // Populate success card
+        elements.successApplicantText.innerHTML = `Applicant: <strong>${escapeHtml(appState.personal.fullName)}</strong>`;
+        elements.successRefPill.textContent = refId;
+
+        // Hide form panels, progress bar, top bar
+        elements.civicAppForm.style.display = "none";
+        document.querySelector(".progress-container").style.display = "none";
+        document.querySelector(".form-top-bar").style.display = "none";
+
+        // Show success card
+        elements.submissionSuccessCard.style.display = "block";
+        elements.submissionSuccessCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+
+      // Pointer link from success card to status tracker
+      elements.btnScrollToTracker.addEventListener("click", function () {
+        elements.statusTrackerSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+    })();
+  </script>
+</body>
+</html>
