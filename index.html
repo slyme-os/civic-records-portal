@@ -1846,7 +1846,7 @@
       <div class="footer-contact-row">
         <span class="contact-officer-badge">Public Liaison Officer</span>
         <div class="contact-details">
-          <strong>Meera Iyer</strong> &nbsp;·&nbsp; Records Section, Counter 3 &nbsp;·&nbsp; 011 2345 6789 &nbsp;·&nbsp; Mon–Fri, 9:30 am–5:30 pm
+          Meera Iyer · Records Section, Counter 3 · 011 2345 6789 · Mon–Fri, 9:30 am–5:30 pm
         </div>
       </div>
 
@@ -1869,7 +1869,7 @@
 
       /* ==========================================================================
          IN-MEMORY APPLICATION STATE
-         (No localStorage, zero backend dependencies)
+         (In-memory only, zero browser storage or backend dependencies)
          ========================================================================== */
       const appState = {
         currentStep: 1,
@@ -2007,23 +2007,27 @@
          Reset to 30:00 on "Extend session". Inline toast notification.
          ========================================================================== */
       let sessionMinutesRemaining = 28;
-      let sessionSecondsRemaining = 0;
+      let isExtendedTo30 = false;
       let sessionInterval = null;
       let toastHideTimeout = null;
 
       function updateSessionDisplay() {
-        if (sessionMinutesRemaining <= 0 && sessionSecondsRemaining <= 0) {
+        if (sessionMinutesRemaining <= 0) {
           elements.sessionTimerText.textContent = "Session expired — please extend";
           return;
         }
-        elements.sessionTimerText.textContent = `Session active — ${sessionMinutesRemaining} min remaining`;
+        if (isExtendedTo30) {
+          elements.sessionTimerText.textContent = `Session active — ${sessionMinutesRemaining}:00 remaining`;
+        } else {
+          elements.sessionTimerText.textContent = `Session active — ${sessionMinutesRemaining} min remaining`;
+        }
       }
 
       function startSessionTimer() {
         updateSessionDisplay();
         if (sessionInterval) clearInterval(sessionInterval);
 
-        // Counts down one minute at a time
+        // Counts down one minute at a time, starting from 28
         sessionInterval = setInterval(function () {
           if (sessionMinutesRemaining > 0) {
             sessionMinutesRemaining -= 1;
@@ -2036,14 +2040,14 @@
       }
 
       function extendSession() {
+        isExtendedTo30 = true;
         sessionMinutesRemaining = 30;
-        sessionSecondsRemaining = 0;
         updateSessionDisplay();
 
         // Restart timer
         startSessionTimer();
 
-        // Show non-blocking inline toast
+        // Show non-blocking inline confirmation ("Session extended") — never browser alert
         elements.sessionToast.classList.add("show");
         if (toastHideTimeout) clearTimeout(toastHideTimeout);
         toastHideTimeout = setTimeout(function () {
@@ -2399,6 +2403,37 @@
           handleFileSelected(e.target.files[0]);
         }
       });
+
+      // Drag and drop support on dropzone
+      const dropzone = elements.uploadDropzone;
+      ["dragenter", "dragover"].forEach(function (eventName) {
+        dropzone.addEventListener(eventName, function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = "var(--primary-navy)";
+          dropzone.style.backgroundColor = "#eef4fc";
+        });
+      });
+      ["dragleave", "dragend"].forEach(function (eventName) {
+        dropzone.addEventListener(eventName, function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = "";
+          dropzone.style.backgroundColor = "";
+        });
+      });
+      dropzone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.style.borderColor = "";
+        dropzone.style.backgroundColor = "";
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleFileSelected(e.dataTransfer.files[0]);
+        }
+      });
+
+      // Set max date for Date of Birth to today
+      elements.dob.max = new Date().toISOString().split("T")[0];
 
       elements.btnRemoveFile.addEventListener("click", function () {
         clearFileInput();
